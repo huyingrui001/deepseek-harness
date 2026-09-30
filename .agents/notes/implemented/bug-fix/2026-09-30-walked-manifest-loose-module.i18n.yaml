@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for 2026-09-30-walked-manifest-loose-module.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-30-walked-manifest-loose-module.md
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package:
+  en: 84972d3e7f18472a
+  zh: 846781af7028c3d2
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/problem:
+  en: 6fca98daca7a3b8a
+  zh: fe9c500fededf36a
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/decision:
+  en: cea4e854b601ea0e
+  zh: f6f63793ec1c740c
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/alternatives-considered:
+  en: 84bc31cab4a4b6d1
+  zh: 285950fef256221c
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/testing:
+  en: aa186aba62e3b57d
+  zh: 580f9af45e70c3bd
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/related:
+  en: 1217b9273cec7eed
+  zh: d52478e47a6c5e3d
+/agent-note-a-walked-manifest-no-longer-fails-a-request-as-a-malformed-package/consequences:
+  en: 614f520ed76db981
+  zh: 0978559eb50c3167

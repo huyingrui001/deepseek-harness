@@ -28,7 +28,7 @@ Status: implemented
 
 ## 插件包字段
 
-`@deepseek-ai/dsh-plugin-package-inventory-deepseek` 从 `llm` 包家族中拥有默认开启的 `dsh_plugin_packages` 字段。它会读取宿主 Loader 树的存活非 group 配置项，并为存活请求 Agent 读取其 standing preset 树。Node 包解析会定位所属 manifest，无需导出 `./package.json`。普通配置项从其所属树解析；standing preset 根会复现 Loader 对宿主基址的显式覆写，嵌套 include 则保留自身基址。最近的匿名 manifest 会标记松散模块；具名 manifest 必须带有版本。系统以确定性顺序按确切名称／版本对去重，同时存活的不同版本仍会分开保留。
+`@deepseek-ai/dsh-plugin-package-inventory-deepseek` 从 `llm` 包家族中拥有默认开启的 `dsh_plugin_packages` 字段。它会读取宿主 Loader 树的存活非 group 配置项，并为存活请求 Agent 读取其 standing preset 树。Node 包解析会定位裸包的所属 manifest，无需导出 `./package.json`。普通配置项从其所属树解析；standing preset 根会复现 Loader 对宿主基址的显式覆写，嵌套 include 则保留自身基址。裸包的 manifest 必须声明非空名称与版本；相对与绝对模块的最近 manifest 来自向上走查，可能是 workspace、monorepo 或不拥有该模块的 profile 根，因此缺少这两个字段中任一个时只标记松散模块。系统以确定性顺序按确切名称／版本对去重，同时存活的不同版本仍会分开保留。
 
 禁用、pending、failed、unloading、disposed、结构性、松散非包、普通依赖、编程式子 fiber 与内存动态插件配置项都不属于该包清单。这个定义会报告运行时可以证明的包支撑组合事实，而不会为任意回调发明来源。
 

@@ -98,10 +98,10 @@ describe('DeepSeek plugin package inventory', () => {
     })
   })
 
-  it('fails request preparation for an active package with malformed identity metadata', async () => {
+  it('fails request preparation when a resolved bare package declares malformed identity metadata', async () => {
     const { ctx, root } = await harness()
-    const bad = await packagePlugin(root, 'bad', { name: 'bad' })
-    await ctx.loader.create({ name: bad })
+    await packagePlugin(root, 'node_modules/bad', { name: 'bad' })
+    await ctx.loader.create({ name: 'bad/plugin.mjs' })
     await expect(ctx.deepseekLlmApiExtensions.prepare({ body: { messages: [] }, signal: SIGNAL }))
       .rejects.toThrow(/must declare non-empty name and version/)
   })
@@ -110,6 +110,16 @@ describe('DeepSeek plugin package inventory', () => {
     const { ctx, root } = await harness()
     const marker = await packagePlugin(root, 'marker-only', {})
     await ctx.loader.create({ name: marker })
+    await expect(ctx.deepseekLlmApiExtensions.prepare({ body: { messages: [] }, signal: SIGNAL }))
+      .resolves.toMatchObject({ fields: { dsh_plugin_packages: { version: 1, packages: [] } } })
+  })
+
+  it('omits a loose module under a named private root that declares no version', async () => {
+    const { ctx, root } = await harness()
+    // A dsh profile root declares `name` and `private` but no `version`; a relative module
+    // beneath it is a loose module, not a malformed package, and must not fail the request.
+    const profileRoot = await packagePlugin(root, 'profile', { name: 'dsh-profile-web', private: true })
+    await ctx.loader.create({ name: profileRoot })
     await expect(ctx.deepseekLlmApiExtensions.prepare({ body: { messages: [] }, signal: SIGNAL }))
       .resolves.toMatchObject({ fields: { dsh_plugin_packages: { version: 1, packages: [] } } })
   })

@@ -63,11 +63,11 @@ After the configured endpoint returns HTTP 2xx, the adapter runs the prepared `a
 | `packages[].name` | string | Exact non-empty npm package name from the owning manifest |
 | `packages[].version` | string | Exact non-empty package version from the same manifest |
 
-Every request re-reads active non-group Loader entries from the host tree and, when available for the request Session, its standing agent-preset tree. Relative and absolute modules use their nearest owning manifest; bare package entries follow the Loader resolution base that activated them. A named manifest without a non-empty version fails request preparation.
+Every request re-reads active non-group Loader entries from the host tree and, when available for the request Session, its standing agent-preset tree. A bare package entry resolves its owning manifest through Node resolution and fails request preparation unless that manifest declares a non-empty `name` and `version`. A relative or absolute module walks to its nearest manifest, which can be a workspace, monorepo, or profile root that does not own the module; a walked manifest missing either field marks a loose module and contributes no package identity.
 
 The sender deduplicates exact `(name, version)` pairs and sorts first by `name`, then by `version`, with a locale-independent text comparison. Simultaneously active versions of one package remain separate entries. Receivers must not collapse the array by package name or infer package activation from array order.
 
-Disabled, pending, failed, unloading, disposed, and structural Loader entries are absent. Ordinary dependencies, loose modules without a named owning package, programmatically mounted child fibers, and in-memory dynamic plugins are also absent because they have no authoritative Loader-backed package identity.
+Disabled, pending, failed, unloading, disposed, and structural Loader entries are absent. Ordinary dependencies, loose modules, programmatically mounted child fibers, and in-memory dynamic plugins are also absent because they have no authoritative Loader-backed package identity.
 
 An enabled inventory with no qualifying entries sends `packages: []`; disabling the contributor omits the entire `dsh_plugin_packages` field. Package identities are provider metadata and never enter model input.
 

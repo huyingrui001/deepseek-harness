@@ -58,15 +58,29 @@ function barePackageName(specifier: string): string | undefined {
   return first.startsWith('@') ? `${first}/${second}` : first
 }
 
-/** Read one manifest identity, optionally treating an absent name as a loose-module marker. */
-function identityFromManifest(path: string, allowAnonymous: boolean): DeepSeekPluginPackageIdentity | undefined {
+/**
+ * Read one manifest identity, or absence for a manifest that does not own its entry.
+ *
+ * A bare package specifier reached its directory through Node resolution, so that
+ * manifest is the package's own and must carry both fields. A relative or absolute
+ * module reached its manifest by walking parent directories, which also finds
+ * workspace, monorepo, and profile roots; npm lets a private root omit `version`, and
+ * such a root does not own the module, so an incomplete walked manifest marks a loose
+ * module rather than failing the request.
+ * @param path - manifest file to read.
+ * @param owning - true when Node package resolution proved this manifest owns the entry.
+ * @returns the package identity, or `undefined` for a loose module.
+ * @throws {Error} when an owning manifest omits a non-empty `name` or `version`.
+ */
+function identityFromManifest(path: string, owning: boolean): DeepSeekPluginPackageIdentity | undefined {
   const manifest = JSON.parse(readFileSync(path, 'utf8')) as PackageManifest
-  if (allowAnonymous && manifest.name === undefined) return undefined
-  if (typeof manifest.name !== 'string' || manifest.name.length === 0
-    || typeof manifest.version !== 'string' || manifest.version.length === 0) {
+  const name = typeof manifest.name === 'string' && manifest.name.length > 0 ? manifest.name : undefined
+  const version = typeof manifest.version === 'string' && manifest.version.length > 0 ? manifest.version : undefined
+  if (name === undefined || version === undefined) {
+    if (!owning) return undefined
     throw new Error(`plugin-package-inventory-deepseek: ${path} must declare non-empty name and version`)
   }
-  return { name: manifest.name, version: manifest.version }
+  return { name, version }
 }
 
 /** Resolve a bare package without requiring it to export `./package.json`. */
@@ -85,7 +99,7 @@ function barePackageManifest(
   return undefined
 }
 
-/** Find the nearest owning manifest for a relative or absolute plugin module. */
+/** Find the nearest manifest above one relative or absolute plugin module, or none at the filesystem root. */
 function nearestManifest(modulePath: string): string | undefined {
   let current = dirname(modulePath)
   const root = parse(current).root
@@ -128,7 +142,7 @@ class PackageIdentityResolver {
         : new URL(entry.options.name, treeBase)
       if (moduleUrl.protocol === 'file:') manifest = nearestManifest(fileURLToPath(moduleUrl))
     }
-    const identity = manifest === undefined ? undefined : identityFromManifest(manifest, packageName === undefined)
+    const identity = manifest === undefined ? undefined : identityFromManifest(manifest, packageName !== undefined)
     this.cache.set(key, identity)
     return identity
   }

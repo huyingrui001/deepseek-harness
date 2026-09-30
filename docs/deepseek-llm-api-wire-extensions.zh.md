@@ -63,11 +63,11 @@
 | `packages[].name` | 字符串 | 来自所属 manifest（元数据清单）的确切非空 npm 包名 |
 | `packages[].version` | 字符串 | 来自同一 manifest 的确切非空包版本 |
 
-每个请求都会重新读取宿主树中的存活非分组 Loader 配置项；请求会话存在 standing agent-preset 树时，也会读取该树。相对与绝对模块使用距离自身最近的所属 manifest；裸包配置项使用激活自身的 Loader 解析基准。具名 manifest 未提供非空版本时，请求准备会失败。
+每个请求都会重新读取宿主树中的存活非分组 Loader 配置项；请求会话存在 standing agent-preset 树时，也会读取该树。裸包配置项通过 Node 解析获得其所属 manifest，该 manifest 未声明非空 `name` 与 `version` 时请求准备会失败。相对与绝对模块向上查找最近的 manifest，而该 manifest 可能是不拥有此模块的 workspace、monorepo 或 profile 根；走查所得 manifest 缺少这两个字段中任一个时，只标记松散模块，不贡献包身份。
 
 发送方会对确切 `(name, version)` 组合去重，并使用与 locale 无关的文本比较，先按 `name`、再按 `version` 排序。同一包的多个同时存活版本会保留为独立配置项。接收方不得按包名折叠该数组，也不得根据数组顺序推断包的激活关系。
 
-该清单不包含已禁用、pending、failed、unloading、disposed 和结构性 Loader 配置项。普通依赖、没有具名所属包的松散模块、以编程方式挂载的子 fiber，以及内存动态插件也不在其中，因为它们没有权威的 Loader 包来源信息。
+该清单不包含已禁用、pending、failed、unloading、disposed 和结构性 Loader 配置项。普通依赖、松散模块、以编程方式挂载的子 fiber，以及内存动态插件也不在其中，因为它们没有权威的 Loader 包来源信息。
 
 清单已启用但没有符合条件的配置项时，系统发送 `packages: []`；禁用贡献插件时，系统省略整个 `dsh_plugin_packages` 字段。包身份属于提供方元数据，绝不进入模型输入。
 
